@@ -1,6 +1,6 @@
 module PubGrub
   class Package
-    ROOT = Package.new "root"
+    ROOT         = Package.new "root"
     ROOT_VERSION = 0
 
     getter name : String

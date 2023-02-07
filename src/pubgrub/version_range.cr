@@ -26,23 +26,23 @@ module PubGrub
 
     def partition_versions(versions : Enumerable(Int32)) : {Int32, Int32, Int32}
       min_index = if @min.nil? || versions.empty?
-        0
-      elsif @include_min
-        (0..versions.size).bsearch { |i| versions[i].nil? || versions[i] >= @min }
-      else
-        (0..versions.size).bsearch { |i| versions[i].nil? || versions[i] > @min }
-      end
+                    0
+                  elsif @include_min
+                    (0..versions.size).bsearch { |i| versions[i].nil? || versions[i] >= @min }
+                  else
+                    (0..versions.size).bsearch { |i| versions[i].nil? || versions[i] > @min }
+                  end
 
       lower = versions.slice 0, min_index
       versions = versions.slice min_index, versions.size
 
       max_index = if @max.nil? || versions.empty?
-        versions.size
-      elsif @include_max
-        (0..versions.size).bsearch { |i| versions[i].nil? || versions[i] > @max }
-      else
-        (0..versions.size).bsearch { |i| versions[i].nil? || versions[i] >= @max }
-      end
+                    versions.size
+                  elsif @include_max
+                    (0..versions.size).bsearch { |i| versions[i].nil? || versions[i] > @max }
+                  else
+                    (0..versions.size).bsearch { |i| versions[i].nil? || versions[i] >= @max }
+                  end
 
       {lower, versions.slice(0, max_index), versions.slice(max_index, versions.size)}
     end
@@ -57,7 +57,7 @@ module PubGrub
       if min = @min
         case version <=> min
         when -1 then return -1
-        when 0 then return -1 unless @include_min
+        when  0 then return -1 unless @include_min
         end
       end
 
@@ -100,28 +100,28 @@ module PubGrub
       return other.intersect(self) if other.is_a? VersionUnion
 
       min_range = if @min.nil?
-        other
-      elsif other.min.nil?
-        self
-      else
-        case @min <=> other.min
-        when -1 then other
-        when 0 then @include_min ? other : self
-        when 1 then self
-        end
-      end
+                    other
+                  elsif other.min.nil?
+                    self
+                  else
+                    case @min <=> other.min
+                    when -1 then other
+                    when  0 then @include_min ? other : self
+                    when  1 then self
+                    end
+                  end
 
       max_range = if @max.nil?
-        other
-      elsif other.max.nil?
-        self
-      else
-        case @max <=> other.max
-        when -1 then self
-        when 0 then @include_max ? other : self
-        when 1 then other
-        end
-      end
+                    other
+                  elsif other.max.nil?
+                    self
+                  else
+                    case @max <=> other.max
+                    when -1 then self
+                    when  0 then @include_max ? other : self
+                    when  1 then other
+                    end
+                  end
 
       if min_range != max_range && (min = min_range.min) && (max = max_range.max)
         case min <=> max
@@ -139,28 +139,28 @@ module PubGrub
       return self if other.empty?
 
       min_range = if min.nil?
-        self
-      elsif other.min.nil?
-        other
-      else
-        case @min <=> other.min
-        when -1 then self
-        when 0 then @include_min ? self : other
-        when 1 then other
-        end
-      end
+                    self
+                  elsif other.min.nil?
+                    other
+                  else
+                    case @min <=> other.min
+                    when -1 then self
+                    when  0 then @include_min ? self : other
+                    when  1 then other
+                    end
+                  end
 
       max_range = if @max.nil?
-        self
-      elsif other.max.nil?
-        other
-      else
-        case @max <=> other.max
-        when -1 then other
-        when 0 then @include_max ? self : other
-        when 1 then self
-        end
-      end
+                    self
+                  elsif other.max.nil?
+                    other
+                  else
+                    case @max <=> other.max
+                    when -1 then other
+                    when  0 then @include_max ? self : other
+                    when  1 then self
+                    end
+                  end
 
       new(min_range.min, max_range.max, min_range.include_min, max_range.include_max)
     end
