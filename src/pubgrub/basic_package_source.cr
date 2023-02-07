@@ -24,7 +24,7 @@ module PubGrub
 
       @cached_dependencies = Hash(Package, Hash(Int32, Package)).new do |hash, key|
         if key == @root_package
-          hash[key] = { @root_version => root_dependencies }
+          hash[key] = {@root_version => root_dependencies}
         else
           hash[key] = Hash(Int32, Array(Int32)).new do |h, k|
             h[k] = dependencies_for key, k
@@ -75,20 +75,20 @@ module PubGrub
         end
 
         range_low = if low == 0
-          nil
-        else
-          sorted_versions[low]
-        end
+                      nil
+                    else
+                      sorted_versions[low]
+                    end
 
         while high < sorted_versions.size && package_deps[sorted_versions[high]][dep_package] == constraint
           high += 1
         end
 
         range_high = if high == sorted_versions.size
-          nil
-        else
-          sorted_versions[high]
-        end
+                       nil
+                     else
+                       sorted_versions[high]
+                     end
 
         range = VersionRange.new range_low, range_high, include_min: true
         self_constraint = VersionConstraint.new package, range
