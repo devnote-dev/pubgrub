@@ -93,11 +93,6 @@ module PubGrub
         range = VersionRange.new range_low, range_high, include_min: true
         self_constraint = VersionConstraint.new package, range
 
-        if package == dep_package
-          cause = Incompatibility::CircularDependency.new dep_package, constraint
-          return [Incompatibility.new([Term.new(self_constraint, true)], cause)]
-        end
-
         dep_constraint = parse_dependency dep_package, constraint
         if !dep_constraint
           cause = Incompatibility::InvalidDependency.new dep_package, constraint
