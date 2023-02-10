@@ -10,6 +10,7 @@ module PubGrub
     def initialize
       reset!
 
+      @assignments = [] of Assignment
       @attempted_solutions = 1
       @backtracking = false
     end

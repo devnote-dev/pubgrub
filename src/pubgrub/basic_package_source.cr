@@ -1,41 +1,41 @@
 module PubGrub
-  class BasicPackageSource
+  abstract class BasicPackageSource
     getter root_package : Package
     getter root_version : Int32
 
     def initialize
       @root_package = Package::ROOT
       @root_version = Package::ROOT_VERSION
-      @cached_versions = Hash(String, Array(Int32)).new do |hash, key|
+      @cached_versions = Hash(Package, Array(String)).new do |hash, key|
         if key == @root_package
-          hash[key] = [@root_version]
+          hash[key] = [@root_version.to_s]
         else
           hash[key] = all_versions_for key
         end
       end
 
-      @sorted_versions = Hash(Package, Array(Int32)).new do |hash, key|
+      @sorted_versions = Hash(Package, Array(String)).new do |hash, key|
         hash[key] = @cached_versions[key].sort
       end
 
-      @version_indexes = Hash(String, Hash(Int32, Int32)).new do |hash, key|
+      @version_indexes = Hash(String, Hash(String, Int32)).new do |hash, key|
         hash[key] = @cached_versions[key].each.with_index.to_h
       end
 
-      @cached_dependencies = Hash(Package, Hash(Int32, Package)).new do |hash, key|
+      @cached_dependencies = Hash(Package, Hash(String, Package)).new do |hash, key|
         if key == @root_package
-          hash[key] = {@root_version => root_dependencies}
+          hash[key] = root_dependencies
         else
-          hash[key] = Hash(Int32, Array(Int32)).new do |h, k|
+          hash[key] = Hash(Int32, Package).new do |h, k|
             h[k] = dependencies_for key, k
           end
         end
       end
     end
 
-    abstract def all_versions_for(package : Package)
+    abstract def all_versions_for(package : Package) : Array(String)
 
-    abstract def dependencies_for(package : Package, version)
+    abstract def dependencies_for(package : Package, version : String) : String
 
     abstract def parse_dependency(package : Package, dependency)
 

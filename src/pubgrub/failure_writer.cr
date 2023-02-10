@@ -2,12 +2,12 @@ module PubGrub
   class FailureWriter
     getter root : Package
     getter derivations : Hash(Incompatibility, Int32)
-    getter lines : Array(Array(String, Int32?))
+    getter lines : Array(Tuple(String, Int32?))
     getter line_numbers : Hash(Incompatibility, Int32)
 
     def initialize(@root : Package)
       @derivations = {} of Incompatibility => Int32
-      @lines = Array(Array(String, Int32?)).new
+      @lines = Array(Tuple(String, Int32?)).new
       @line_numbers = {} of Incompatibility => Int32
     end
 
@@ -17,7 +17,7 @@ module PubGrub
       visit @root
       padding = @line_numbers.empty? ? 0 : "(#{@line_numbers.values.last})".size
 
-      @lines.map do |message, number|
+      @lines.map do |(message, number)|
         next "" if message.empty?
 
         lead = (number ? "(#{number})" : "").ljust padding
@@ -35,7 +35,7 @@ module PubGrub
         @line_numbers[incompatibility] = number
       end
 
-      @lines << [message, number]
+      @lines << {message, number}
     end
 
     private def visit(incompatibility, conclusion = false)

@@ -8,6 +8,8 @@ module PubGrub
     getter seen_incompatibilities : Hash(Package, Incompatibility)
 
     def initialize(@source, root : Package)
+      @solution = PartialSolution.new
+      @seen_incompatibilities = {} of Package => Incompatibility
       add_incompatibility Incompatibility.new([Term.new(VersionConstraint.any(root))], false)
       propogate root
     end
