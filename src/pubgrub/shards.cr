@@ -6,8 +6,8 @@ module PubGrub::Shards
       case op
       when "~>"
         VersionRange.new(
-          version,
-          version.class.new(version.bump.to_s + ".A"),
+          min: version,
+          max: version.class.new(version.bump.to_s + ".A"),
           include_min: true,
           name: "~> #{version}"
         )

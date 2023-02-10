@@ -90,7 +90,7 @@ module PubGrub
                        sorted_versions[high]
                      end
 
-        range = VersionRange.new range_low, range_high, include_min: true
+        range = VersionRange.new min: range_low, max: range_high, include_min: true
         self_constraint = VersionConstraint.new package, range
 
         dep_constraint = parse_dependency dep_package, constraint

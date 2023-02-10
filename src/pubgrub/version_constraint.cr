@@ -9,7 +9,7 @@ module PubGrub
     end
 
     def exact(package : Package, version : Int32) : VersionConstraint
-      range = VersionRange.new(version, version, true, true)
+      range = VersionRange.new(min: version, max: version, include_min: true, include_max: true)
 
       new package, range
     end

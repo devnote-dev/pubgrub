@@ -6,14 +6,14 @@ module PubGrub
     getter max : Int32?
     getter? include_min : Bool
     getter? include_max : Bool
-    getter name : String { "" }
+    getter name : String?
 
-    def initialize(@min : Int32?, @max : Int32?, *,
-                   @include_min : Bool = false, @include_max : Bool = false)
+    def initialize(*, @min : Int32?, @max : Int32?, @include_min : Bool = false,
+                   @include_max : Bool = false, @name : String? = nil)
     end
 
     def self.any
-      new nil, nil
+      new min: nil, max: nil
     end
 
     def ranges : Array(VersionRange)
@@ -132,7 +132,12 @@ module PubGrub
         end
       end
 
-      new(min_range.min, max_range.max, min_range.include_min, max_range.include_max)
+      new(
+        min: min_range.min,
+        max: max_range.max,
+        include_min: min_range.include_min,
+        include_max: max_range.include_max
+      )
     end
 
     def span(other : VersionRange) : VersionRange
@@ -162,7 +167,12 @@ module PubGrub
                     end
                   end
 
-      new(min_range.min, max_range.max, min_range.include_min, max_range.include_max)
+      new(
+        min: min_range.min,
+        max: max_range.max,
+        include_min: min_range.include_min,
+        include_max: max_range.include_max
+      )
     end
 
     def union(other : VersionRange) : VersionRange
