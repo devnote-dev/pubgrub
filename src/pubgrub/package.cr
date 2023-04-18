@@ -19,11 +19,11 @@ module PubGrub
       @version = SemanticVersion.parse version
     end
 
-    def name
+    def name : String
       @name
     end
 
-    def version
+    def version : SemanticVersion
       @version
     end
   end

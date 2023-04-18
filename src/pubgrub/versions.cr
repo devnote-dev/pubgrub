@@ -13,8 +13,8 @@ module PubGrub
     getter? include_max : Bool
 
     def initialize(*, @name : String? = nil, @min : Int32? = nil,
-                   @max : Int32? = nil, @include_min : Int32? = nil,
-                   @include_max : Int32? = nil)
+                   @max : Int32? = nil, @include_min : Bool = false,
+                   @include_max : Bool = false)
     end
 
     def ranges : Array(VersionRange)
