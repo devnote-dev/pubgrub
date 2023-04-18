@@ -1,14 +1,14 @@
 module PubGrub
   class Term
     getter package : Package
-    getter normalized : VersionConstraint?
-    getter constraint : VersionConstraint
+    getter normalized : Version::Constraint?
+    getter constraint : Version::Constraint
     getter? positive : Bool
     getter? empty : Bool { @normalized.try &.empty? || false }
 
     def_equals @constraint, @positive
 
-    def initialize(@package : Package, @constraint : VersionConstraint, @positive : Bool)
+    def initialize(@package : Package, @constraint : Version::Constraint, @positive : Bool)
     end
 
     def invert : Term
@@ -46,7 +46,7 @@ module PubGrub
       end
     end
 
-    def normalize : VersionConstraint
+    def normalize : Version::Constraint
       @normalized ||= @positive ? @constraint : @constraint.invert
     end
 
