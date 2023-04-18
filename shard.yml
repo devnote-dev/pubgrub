@@ -5,4 +5,9 @@ crystal: 1.7.0
 authors:
   - Devonte W <https://github.com/devnote-dev>
 
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    version: ~> 1.4.0
+
 license: MIT

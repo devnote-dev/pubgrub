@@ -3,6 +3,7 @@
 /bin/
 /tests/
 /.shards/
+/.vscode/
 *.dwarf
 
 # Libraries don't need dependency lock
