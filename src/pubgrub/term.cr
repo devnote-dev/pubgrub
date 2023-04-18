@@ -20,16 +20,6 @@ module PubGrub
     end
 
     def relation(other : Term) : Relation
-      if @positive && other.positive?
-        @constraint.relation(other.constraint)
-      elsif negative? && other.negative?
-        if @constraint.allows_all?(other.constraint)
-          :disjoint
-        else
-          :overlap
-        end
-      end
-
       case
       when @positive && other.positive?
         @constraint.relation other.constraint
