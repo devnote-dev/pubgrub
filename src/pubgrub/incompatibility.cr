@@ -3,6 +3,9 @@ module PubGrub
     struct Root < Cause
     end
 
+    struct Decision < Cause
+    end
+
     struct Dependency < Cause
     end
 
