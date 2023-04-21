@@ -1,15 +1,23 @@
 module PubGrub
   class PartialSolution
     getter assignments : Array(Assignment)
-    getter terms : Hash(Package, Hash(Term, Relation))
-    getter relations : Hash(Package, Term)
+    getter assignments_by : Hash(Package, Array(Assignment))
+    getter cumulative : Hash(Package, Version)
+    getter terms : Hash(Package, Term)
+    getter relations : Hash(Package, Hash(Term, Relation))
     getter decisions : Array(Cause)
+    getter required : Hash(Package, Bool)
     getter attempts : Int32
     getter? backtracking : Bool
 
     def initialize
-      @terms = Hash(Package, Hash(Term, Relation)).new
-      @relations = {} of Package => Term
+      @assignments = [] of Assignment
+      @assignments_by = {} of Package => Array(Assignment)
+      @cumulative = Hash(Package, Version).new.compare_by_identity
+      @terms = {} of Package => Term
+      @relations = Hash(Package, Hash(Term, Relation)).new
+      @decisions = [] of Cause
+      @required = {} of Package => Bool
       @attempts = 1
       @backtracking = false
     end
@@ -76,10 +84,10 @@ module PubGrub
         hash[key] = [] of Assignment
       end
 
-      @cumulative = {} of Package => Version
+      @cumulative = Hash(Package, Version).new.compare_by_identity
       @terms = {} of Package => Term
-      @relations = Hash(Package, Hash(Package, Term)).new do |hash, key|
-        hash[key] = {} of Package => Term
+      @relations = Hash(Package, Hash(Term, Relation)).new do |hash, key|
+        hash[key] = {} of Term => Relation
       end
 
       @required = {} of Package => Bool
