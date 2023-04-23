@@ -81,7 +81,7 @@ module PubGrub
     end
 
     def difference(other : Term) : Term?
-      intersect other.invert
+      intersect other.inverse
     end
 
     private def compatible?(other : Package) : Bool
