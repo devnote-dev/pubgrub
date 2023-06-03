@@ -1,6 +1,6 @@
 module PubGrub
   class Version
-    module Constraint
+    abstract class Constraint
       def self.any : Range
         Range.new
       end
@@ -79,7 +79,7 @@ module PubGrub
         end
 
         return empty if flattened.empty?
-        return any if flattened.any? &.any?
+        return any if flattened.any? &.any?  # ameba:disable Performance/AnyInsteadOfEmpty
 
         flattened.sort!
         merged = [] of Version::Range

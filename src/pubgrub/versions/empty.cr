@@ -1,7 +1,6 @@
 module PubGrub
   class Version
-    class Empty
-      include Constraint
+    class Empty < Constraint
 
       def any? : Bool
         false

@@ -1,9 +1,14 @@
 module PubGrub
   class Version
-    class Union
-      include Constraint
-
+    class Union < Constraint
       getter ranges : Array(Version::Range)
+
+      def self.from_ranges(ranges : Array(Version::Range))
+        new ranges
+      end
+
+      def initialize(@ranges)
+      end
 
       def any? : Bool
         false
@@ -19,17 +24,17 @@ module PubGrub
 
       def allows_any?(other : Version::Constraint) : Bool
         our_ranges = @ranges.each
-        ours_moved = our_ranges.next
+        # ours_moved = our_ranges.next
         their_ranges = other.ranges.each
-        theirs_moved = their_ranges.next
+        # theirs_moved = their_ranges.next
 
         while our_ranges.next && their_ranges.next
           return true if ours.allows_any? thiers
 
           if allows_higher?(theirs, ours)
-            ours_moved = our_ranges.next
+            _ = our_ranges.next
           else
-            theirs_moved = their_ranges.next
+            _ = their_ranges.next
           end
         end
 
@@ -83,8 +88,30 @@ module PubGrub
       end
 
       def difference(other : Version::Constraint) : Version::Constraint
-        # TODO
-        other
+        our_ranges = @ranges.each
+        their_ranges = ranges_for(other).each
+        new_ranges = [] of Range
+
+        current = our_ranges.next
+        their_ranges.next
+
+        theirs_next = -> do
+          return true if their_ranges.next
+          new_ranges << current
+
+          until (current = our_ranges.next) == Iterator::Stop::INSTANCE
+            new_ranges << current
+          end
+
+          false
+        end
+
+        ours_next = ->(include_current : Bool) do
+          new_ranges << current if include_current
+          return false unless (current = our_ranges.next) == Iterator::Stop::INSTANCE
+        end
+
+        # TODO: requires current tracking
       end
 
       private def ranges_for(constraint : Version::Constraint) : Array(Version::Range)
@@ -101,42 +128,6 @@ module PubGrub
         return false if first.max != second.min
 
         (first.include_max? && !second.include_min?) || (!first.include_max? && second.include_min?)
-      end
-
-      private def allows_higher?(first : Version::Range, second : Version::Range) : Bool
-        return !second.max.nil? if first.max.nil?
-        return false if second.max.nil?
-
-        case first.max.not_nil! <=> second.max.not_nil!
-        when 1 then true
-        when -1 then false
-        else first.include_max? && !second.include_max?
-        end
-      end
-
-      private def allows_lower?(first : Version::Range, second : Version::Range) : Bool
-        return !second.min.nil? if first.min.nil?
-        return false if second.min.nil?
-
-        case first.min.not_nil! <=> second.min.not_nil!
-        when 1 then false
-        when -1 then true
-        else first.include_min? && !second.include_min?
-        end
-      end
-
-      private def strictly_higher?(first : Version::Range, second : Version::Range) : Bool
-        strictly_lower?(second, first)
-      end
-
-      private def strictly_lower?(first : Version::Range, second : Version::Range) : Bool
-        return false if first.max.nil? || second.max.nil?
-
-        case first.max.not_nil! <=> second.min.not_nil!
-        when 1 then false
-        when -1 then true
-        else !first.include_max? || !second.include_min?
-        end
       end
     end
   end
