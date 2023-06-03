@@ -1,65 +1,4 @@
 module PubGrub
-  class Incompatibility
-    getter terms : Array(Term)
-    getter cause : Cause
-
-    private def initialize(@terms : Array(Term), @cause : Cause)
-    end
-
-    def self.new(terms : Array(Term), cause : Cause)
-      if terms.size != 1 && cause.is_a?(Conflict) && terms.any? { |t| t.positive? || t.root? }
-        @terms = terms.reject { |t| t.positive? || t.root? }
-      end
-
-      if @terms.size == 1 || (@terms.size == 2 && @terms.first.package.name != @terms.last.package.name)
-        return new @terms, cause
-      end
-
-      @terms.group_by(&.package).map do |package, common_terms|
-        common_terms.reduce { |acc, term| acc & term }
-      end
-    end
-
-    def conflict? : Bool
-      @cause.is_a? Conflict
-    end
-
-    def failure? : Bool
-      @terms.empty? || (@terms.size == 1 && @terms.first.package.root?)
-    end
-
-    def external_incompatibilities : Array(Incompatibility)
-      if conflict?
-        {
-          @cause.conflict,
-          @cause.other
-        }.flat_map &.external_incompatibilities
-      else
-        [self]
-      end
-    end
-
-    def to_s : String
-      String.build { |io| to_s io }
-    end
-
-    def to_s(io : IO) : Nil
-      case cause = @cause
-      when Dependency
-        first = @terms.first
-        last = @terms.last
-
-        io << first.to_s(true) << " depends on " << last
-      when UseLatest
-        forbidden = @terms.first
-        any = Version::Constraint.any - forbidden.constraint
-
-        io << "the latest version of " << forbidden << '(' << any << ") is required"
-      when Package
-  end
-
-  ################################################################################
-
   abstract struct Cause
     struct Root < Cause
     end
@@ -130,7 +69,7 @@ module PubGrub
           term = terms.first
 
           if term.positive?
-            if term.constraint.any?
+            if term.constraint.any?  # ameba:disable Performance/AnyInsteadOfEmpty
               "#{term.package} cannot be used"
             else
               "#{term.to_s(true)} cannot be used"
