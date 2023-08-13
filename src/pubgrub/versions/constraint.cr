@@ -74,12 +74,12 @@ module PubGrub
           case constraint
           when Version::Range then constraint.ranges
           when Version::Union then [constraint]
-          else raise ArgumentError.new "unknown version constraint type: #{typeof(constraint)}"
+          else                     raise ArgumentError.new "unknown version constraint type: #{typeof(constraint)}"
           end
         end
 
         return empty if flattened.empty?
-        return any if flattened.any? &.any?  # ameba:disable Performance/AnyInsteadOfEmpty
+        return any if flattened.any? &.any? # ameba:disable Performance/AnyInsteadOfEmpty
 
         flattened.sort!
         merged = [] of Version::Range
@@ -136,11 +136,11 @@ module PubGrub
         end
 
         case op
-        when "<" then Version::Range.new(max: version)
+        when "<"  then Version::Range.new(max: version)
         when "<=" then Version::Range.new(max: version, include_max: true)
-        when ">" then Version::Range.new(min: version)
+        when ">"  then Version::Range.new(min: version)
         when ">=" then Version::Range.new(min: version, include_min: true)
-        else raise ArgumentError.new "unsupported version operator '#{op}'"
+        else           raise ArgumentError.new "unsupported version operator '#{op}'"
         end
       end
 

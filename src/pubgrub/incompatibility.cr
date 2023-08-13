@@ -69,7 +69,7 @@ module PubGrub
           term = terms.first
 
           if term.positive?
-            if term.constraint.any?  # ameba:disable Performance/AnyInsteadOfEmpty
+            if term.constraint.any? # ameba:disable Performance/AnyInsteadOfEmpty
               "#{term.package} cannot be used"
             else
               "#{term.to_s(true)} cannot be used"

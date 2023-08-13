@@ -95,7 +95,7 @@ module PubGrub
         current = our_ranges.next
         their_ranges.next
 
-        theirs_next = -> do
+        theirs_next = ->do
           return true if their_ranges.next
           new_ranges << current
 
@@ -120,7 +120,7 @@ module PubGrub
         case constraint
         when Version::Range then constraint.ranges
         when Version::Union then [constraint]
-        else raise ArgumentError.new "unknown version constraint type: #{typeof(constraint)}"
+        else                     raise ArgumentError.new "unknown version constraint type: #{typeof(constraint)}"
         end
       end
 

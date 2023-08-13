@@ -126,7 +126,7 @@ module PubGrub
 
         if other.is_a? Range
           edges_touch = (!@max.nil? && @max == other.min && (@include_max & other.include_min?)) ||
-            (!@min.nil? && @min == other.max && (@include_min | other.include_max?))
+                        (!@min.nil? && @min == other.max && (@include_min | other.include_max?))
 
           if !edges_touch && !allows_any?(other)
             return Constraint.union_of(self, other)
