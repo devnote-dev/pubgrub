@@ -1,17 +1,19 @@
 module PubGrub
+  enum Relation
+    Subset
+    Disjoint
+    Overlapping
+  end
+
   class Term
-    getter package : Package
+    getter package : Package::Range
     getter? positive : Bool
 
-    def initialize(@package : Package, @positive : Bool)
-    end
-
-    def self.new(constraint : Version::Constraint, positive : Bool)
-      new constraint.package, positive
+    def initialize(@package, @positive)
     end
 
     def inverse : Term
-      Term.new @package, !@positive
+      new @package, !@positive
     end
 
     def constraint : Version::Constraint
@@ -23,57 +25,57 @@ module PubGrub
     end
 
     def relation(other : Term) : Relation
-      if @package.name != other.package.name
-        raise ArgumentError.new "mismatched package names: expected #{@package.name}; got #{other.package.name}"
+      unless @package.name == other.package.name
+        raise ArgumentError.new "Other package should refer to package #{@package.name}"
       end
 
-      constraint = other.constraint
+      other_constraint = other.constraint
       if other.positive?
         if @positive
-          return :disjoint unless compatible? other.package
-          return :subset if other.allows_all? constraint
-          return :disjoint if @constraint.allows_any? constraint
+          return :subset if !compatible?(other.package)
+          return :subset if !other_constraint.allows_any?(constraint)
+          return :disjoint if other_constraint.allows_all?(constraint)
 
-          :overlap
+          :overlapping
         else
-          return :overlap unless compatible? other.package
-          return :disjoint if @constraint.allows_all? constraint
+          return :overlapping if !compatible?(other.package)
+          return :disjoint if constraint.allows_all?(other_constraint)
 
-          :overlap
+          :overlapping
         end
       else
         if @positive
-          return :subset unless compatible? other.package
-          return :subset unless constraint.allows_any? @constraint
-          return :disjoint if constraint.allows_all? @constraint
+          return :subset if !compatible?(other.package)
+          return :subset if !other_constraint.allows_any?(constraint)
+          return :disjoint if other_constraint.allows_all?(constraint)
 
-          :overlap
+          :overlapping
         else
-          return :overlap unless compatible? other.package
-          return :subset if @constraint.allows_all? constraint
+          return :overlapping if !compatible?(other.package)
+          return :subset if constraint.allows_all?(other_constraint)
 
-          :overlap
+          :overlapping
         end
       end
     end
 
     def intersect(other : Term) : Term?
-      if @package.name != other.package.name
-        raise ArgumentError.new "mismatched package names: expected #{@package.name}; got #{other.package.name}"
+      unless @package.name == other.package.name
+        raise ArgumentError.new "Other package should refer to package #{@package.name}"
       end
 
-      if compatible? other.package
-        if @positive ^ other.positive?
+      if compatible?(other.package)
+        if @positive != other.positive?
           positive = @positive ? self : other
           negative = @positive ? other : self
 
-          non_empty_term(positive.constraint - negative.constraint, true)
+          non_empty_term positive.constraint.difference(negative.constraint), true
         elsif @positive
-          non_empty_term(@constraint & other.constraint, true)
+          non_empty_term constraint.intersect(other.constraint), false
         else
-          non_empty_term(@constraint | other.constraint, true)
+          non_empty_term constraint.union(other.constraint), false
         end
-      elsif @positive ^ other.positive?
+      elsif @positive != other.positive?
         @positive ? self : other
       else
         nil
@@ -81,24 +83,21 @@ module PubGrub
     end
 
     def difference(other : Term) : Term?
-      intersect other.inverse
-    end
-
-    private def compatible?(other : Package) : Bool
-      @package.root? || other.root? || @package == other
-    end
-
-    private def non_empty_term(constraint : Version::Constraint, positive : Bool) : Term?
-      constraint.empty? ? nil : Term.new(constraint, positive)
-    end
-
-    def to_s : String
-      String.build { |io| to_s io }
+      intersect(other.inverse)
     end
 
     def to_s(io : IO) : Nil
       io << "not " unless @positive
       io << @package
+    end
+
+    private def compatible?(other : Package::Range) : Bool
+      @package.root? || other.root? || @package.to_reference == other.to_reference
+    end
+
+    private def non_empty_term(constraint : Version::Constraint, positive : Bool) : Term?
+      return nil if constraint.empty?
+      Term.new @package.to_reference.with_constraint(constraint), positive
     end
   end
 end

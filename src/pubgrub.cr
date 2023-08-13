@@ -1,7 +1,3 @@
-require "semantic_version"
-
-require "./pubgrub/term"
-require "./pubgrub/versions/*"
 require "./pubgrub/*"
 
 module PubGrub

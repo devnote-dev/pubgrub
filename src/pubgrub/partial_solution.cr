@@ -1,5 +1,12 @@
 module PubGrub
   class PartialSolution
+    @assignments : Array(Assignment)
+    @decisions : Hash(String, Package)
+  end
+
+  ################################################################
+
+  class PartialSolution
     getter assignments : Array(Assignment)
     getter assignments_by : Hash(Package, Array(Assignment))
     getter cumulative : Hash(Package, Version)
