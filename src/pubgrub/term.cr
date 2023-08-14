@@ -6,7 +6,7 @@ module PubGrub
   end
 
   class Term
-    getter package : Package::Range
+    getter package : Package
     getter? positive : Bool
 
     def initialize(@package, @positive)
@@ -91,7 +91,7 @@ module PubGrub
       io << @package
     end
 
-    private def compatible?(other : Package::Range) : Bool
+    private def compatible?(other : Package) : Bool
       @package.root? || other.root? || @package.to_reference == other.to_reference
     end
 

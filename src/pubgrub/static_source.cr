@@ -4,6 +4,11 @@ module PubGrub
 
     @packages : Hash(String, Hash(Version, Hash(String, String)))
 
+    def self.new(& : self ->) : self
+      with (this = new) yield this
+      this
+    end
+
     def initialize
       @packages = Hash(String, Hash(Version, Hash(String, String))).new do |hash, key|
         hash[key] = Hash(Version, Hash(String, String)).new do |h, k|
@@ -29,7 +34,7 @@ module PubGrub
       @packages[package.name][version]
     end
 
-    def incompaitibilties_for(package : Package, version : Version) : Array(Incompatibility)
+    def incompatibilities_for(package : Package, version : Version) : Array(Incompatibility)
       dependencies = dependencies_for package, version
       package_constraint = Version::Constraint.new package, Version::Range.new(version, version, true, true)
       incomps = [] of Incompatibility

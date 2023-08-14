@@ -4,7 +4,7 @@ module PubGrub
 
     @source : PackageSource
     @incompatibilities : Hash(String, Array(Incompatibility))
-    @solutuion : PartialSolution
+    @solution : PartialSolution
 
     def initialize(@source)
       @incompatibilities = Hash(String, Array(Incompatibility)).new do |hash, key|

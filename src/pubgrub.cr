@@ -1,4 +1,5 @@
 require "log"
+require "./pubgrub/term"
 require "./pubgrub/*"
 
 module PubGrub

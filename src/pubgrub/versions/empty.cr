@@ -29,7 +29,7 @@ module PubGrub
         other
       end
 
-      def differnce(other : Version::Constraint) : Version::Constraint
+      def difference(other : Version::Constraint) : Version::Constraint
         self
       end
 

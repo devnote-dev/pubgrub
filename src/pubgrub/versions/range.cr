@@ -52,7 +52,7 @@ module PubGrub
         end
       end
 
-      def allows_all?(first : Version::Range, second : Version::Range) : Bool
+      def allows_all?(other : Version::Constraint) : Bool
         return true if other.empty?
 
         case other

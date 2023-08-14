@@ -12,7 +12,7 @@ module PubGrub
         return new terms, cause
       end
 
-      by_name = Hash(String, Hash(Package::Reference, Term)).new
+      by_name = Hash(String, Hash(Package, Term)).new
       terms.each do |term|
         by_ref = by_name.put term.package.name { }
         ref = term.package.to_reference

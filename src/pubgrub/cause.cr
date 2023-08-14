@@ -4,8 +4,8 @@ module PubGrub
     end
 
     struct Dependency < Cause
-      getter depender : Package::Range
-      getter target : Package::Range
+      getter depender : Package
+      getter target : Package
 
       def initialize(@depender, @target)
       end

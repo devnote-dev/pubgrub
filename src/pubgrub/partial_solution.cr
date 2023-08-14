@@ -1,24 +1,24 @@
 module PubGrub
   class PartialSolution
     @assignments : Array(Assignment)
-    @decisions : Hash(String, Package::ID)
+    @decisions : Hash(String, Package)
     @positive : Hash(String, Term?)
-    @negative : Hash(String, Hash(Package::Reference, Term))
+    @negative : Hash(String, Hash(Package, Term))
     @backtracking : Bool
     getter attempted : Int32
 
     def initialize
       @assignments = [] of Assignment
-      @decisions = {} of String => Package::ID
+      @decisions = {} of String => Package
       @positive = {} of String => Term?
-      @negative = Hash(String, Hash(Package::Reference, Term)).new do |hash, key|
-        hash[key] = {} of Package::Reference => Term
+      @negative = Hash(String, Hash(Package, Term)).new do |hash, key|
+        hash[key] = {} of Package => Term
       end
       @backtracking = false
       @attempted = 1
     end
 
-    def decisions : Array(Package::ID)
+    def decisions : Array(Package)
       @decisions.values
     end
 
@@ -33,7 +33,7 @@ module PubGrub
       @decisions.size
     end
 
-    def decide(package : Package::ID) : Nil
+    def decide(package : Package) : Nil
       @attempted += 1 if @backtracking
       @backtracking = false
       @decisions[package.name] = package
@@ -41,7 +41,7 @@ module PubGrub
       assign Assignment.decision(package, @decision_level, @assignments.size)
     end
 
-    def derive(package : Package::Range, positive : Bool, cause : Incompatibility) : Nil
+    def derive(package : Package, positive : Bool, cause : Incompatibility) : Nil
       assign Assignment.derivation(package, positive, @decision_level, @assignments.size, cause)
     end
 
