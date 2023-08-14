@@ -6,7 +6,7 @@ module PubGrub
     @incompatibilities : Hash(String, Array(Incompatibility))
     @solutuion : PartialSolution
 
-    def initialize
+    def initialize(@source)
       @incompatibilities = Hash(String, Array(Incompatibility)).new do |hash, key|
         hash[key] = [] of Incompatibility
       end
