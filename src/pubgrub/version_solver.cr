@@ -185,10 +185,10 @@ module PubGrub
         unsatisfied.min_by do |term|
           versions = @source.versions_for term.package, term.constraint
           dependencies = if versions.empty?
-            [] of Void
-          else
-            @source.dependencies_for term.package, versions[0]
-          end
+                           [] of Void
+                         else
+                           @source.dependencies_for term.package, versions[0]
+                         end
 
           {versions.size, dependencies.size}
         end
