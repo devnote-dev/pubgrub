@@ -1,4 +1,3 @@
-# safe
 module PubGrub
   class PartialSolution
     @assignments : Array(Assignment)

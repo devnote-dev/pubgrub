@@ -1,4 +1,3 @@
-# safe
 module PubGrub
   class Incompatibility
     getter terms : Array(Term)

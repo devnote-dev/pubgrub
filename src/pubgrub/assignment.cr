@@ -1,4 +1,3 @@
-# safe
 module PubGrub
   class Assignment < Term
     getter decision_level : Int32

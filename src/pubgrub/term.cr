@@ -1,4 +1,3 @@
-# safe
 module PubGrub
   enum Relation
     Subset

@@ -1,3 +1,4 @@
+require "log"
 require "./pubgrub/*"
 
 module PubGrub

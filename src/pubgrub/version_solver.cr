@@ -1,5 +1,3 @@
-require "log"
-
 module PubGrub
   class VersionSolver
     Log = ::Log.for(self)
