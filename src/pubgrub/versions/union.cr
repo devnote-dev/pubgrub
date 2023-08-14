@@ -90,26 +90,26 @@ module PubGrub
       def difference(other : Version::Constraint) : Version::Constraint
         our_ranges = @ranges.each
         their_ranges = ranges_for(other).each
-        new_ranges = [] of Range
+        # new_ranges = [] of Range
 
-        current = our_ranges.next
+        _ = our_ranges.next
         their_ranges.next
 
-        theirs_next = ->do
-          return true if their_ranges.next
-          new_ranges << current
+        # theirs_next = ->do
+        #   return true if their_ranges.next
+        #   new_ranges << current
 
-          until (current = our_ranges.next) == Iterator::Stop::INSTANCE
-            new_ranges << current
-          end
+        #   until (current = our_ranges.next) == Iterator::Stop::INSTANCE
+        #     new_ranges << current
+        #   end
 
-          false
-        end
+        #   false
+        # end
 
-        ours_next = ->(include_current : Bool) do
-          new_ranges << current if include_current
-          return false unless (current = our_ranges.next) == Iterator::Stop::INSTANCE
-        end
+        # ours_next = ->(include_current : Bool) do
+        #   new_ranges << current if include_current
+        #   return false unless (current = our_ranges.next) == Iterator::Stop::INSTANCE
+        # end
 
         # TODO: requires current tracking
       end

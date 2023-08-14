@@ -3,7 +3,7 @@ module Version
     return !second.max.nil? if first.max.nil?
     return false if second.max.nil?
 
-    case first.max.not_nil! <=> second.max.not_nil!
+    case first.max.as(Int32) <=> second.max.as(Int32)
     when  1 then true
     when -1 then false
     else         first.include_max? && !second.include_max?
@@ -14,7 +14,7 @@ module Version
     return !second.min.nil? if first.min.nil?
     return false if second.min.nil?
 
-    case first.min.not_nil! <=> second.min.not_nil!
+    case first.min.as(Int32) <=> second.min.as(Int32)
     when  1 then false
     when -1 then true
     else         first.include_min? && !second.include_min?
@@ -28,7 +28,7 @@ module Version
   private def strictly_lower?(first : Version::Range, second : Version::Range) : Bool
     return false if first.max.nil? || second.max.nil?
 
-    case first.max.not_nil! <=> second.min.not_nil!
+    case first.max.as(Int32) <=> second.min.as(Int32)
     when  1 then false
     when -1 then true
     else         !first.include_max? || !second.include_min?

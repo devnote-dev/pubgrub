@@ -79,7 +79,7 @@ module PubGrub
         end
 
         return empty if flattened.empty?
-        return any if flattened.any? &.any? # ameba:disable Performance/AnyInsteadOfEmpty
+        return any if flattened.any? &.any?
 
         flattened.sort!
         merged = [] of Version::Range
