@@ -1,122 +1,124 @@
 module PubGrub
   class PartialSolution
     @assignments : Array(Assignment)
-    @decisions : Hash(String, Package)
-  end
-
-  ################################################################
-
-  class PartialSolution
-    getter assignments : Array(Assignment)
-    getter assignments_by : Hash(Package, Array(Assignment))
-    getter cumulative : Hash(Package, Version)
-    getter terms : Hash(Package, Term)
-    getter relations : Hash(Package, Hash(Term, Relation))
-    getter decisions : Array(Cause)
-    getter required : Hash(Package, Bool)
-    getter attempts : Int32
-    getter? backtracking : Bool
+    @decisions : Hash(String, Package::ID)
+    @positive : Hash(String, Term?)
+    @negative : Hash(String, Hash(Package::Reference, Term))
+    @backtracking : Bool
+    getter attempted : Int32
 
     def initialize
       @assignments = [] of Assignment
-      @assignments_by = {} of Package => Array(Assignment)
-      @cumulative = Hash(Package, Version).new.compare_by_identity
-      @terms = {} of Package => Term
-      @relations = Hash(Package, Hash(Term, Relation)).new
-      @decisions = [] of Cause
-      @required = {} of Package => Bool
-      @attempts = 1
+      @decisions = {} of String => Package::ID
+      @positive = {} of String => Term?
+      @negative = Hash(String, Hash(Package::Reference, Term)).new do |hash, key|
+        hash[key] = {} of Package::Reference => Term
+      end
       @backtracking = false
+      @attempted = 1
+    end
+
+    def decisions : Array(Package::ID)
+      @decisions.values
+    end
+
+    def unsatisfied : Array(Package::Range)
+      @positive
+        .values
+        .compact
+        .reject { |t| @decisions.has_key? t.package.name }
+        .map &.package
     end
 
     def decision_level : Int32
       @decisions.size
     end
 
-    def relation(term : Term) : Relation
-      package = term.package
-      return :overlap if @terms.has_key? package
+    def decide(package : Package::ID) : Nil
+      @attempted += 1 if @backtracking
+      @backtracking = false
+      @decisions[package.name] = package
 
-      @relations[package][term] ||= @terms[package].relation(term)
+      assign Assignment.decision(package, @decision_level, @assignments.size)
+    end
+
+    def derive(package : Package::Range, positive : Bool, cause : Incompatibility) : Nil
+      assign Assignment.derivation(package, positive, @decision_level, @assignments.size, cause)
+    end
+
+    def backtrack(decision_level : Int32) : Nil
+      @backtracking = true
+      packages = [] of String
+
+      while @assignments.last.decision_level > @decision_level
+        removed = @assignments.pop
+        packages << removed.package.name
+        @decisions.delete removed.package.name if removed.decision?
+      end
+
+      packages.each do |package|
+        @positive.delete package
+        @negative.delete package
+      end
+
+      @assignments.each do |assignment|
+        register asignment if packages.includes? assignment.package.name
+      end
+    end
+
+    def satisfier(term : Term) : Assignment
+      assigned : Term? = nil
+
+      @assignments.each do |assignment|
+        next unless assignment.package.name == term.package.name
+
+        if !assignment.package.root? && assignment.package.to_reference != term.package.to_reference
+          next unless assignment.positive?
+          return assignment
+        end
+
+        assigned = assigned.nil? ? assignment : assigned.intersect(assignment)
+        return assignment if assigned.try &.satisfies? term
+      end
     end
 
     def satisfies?(term : Term) : Bool
       relation(term).subset?
     end
 
-    def derive(term : Term, cause : Cause) : Assignment
-      add Assignment.new(term, cause, decision_level, @assignments.size)
+    def relation(term : Term) : Relation
+      positive = @positive[term.package.name]?
+      return positive.relation(term) if positive
+
+      return :overlapping unless by_ref = @negative[term.package.name]?
+      return :overlapping unless negative = by_ref[term.package.to_reference]?
+
+      negative.relation term
     end
 
-    def satisfier(term : Term) : Assignment
-      @assignments_by[term.package].bsearch do |assignment|
-        @cumulative[assignment].satisfies?(term)
-      end || raise "#{term} unsatisfied"
-    end
-
-    def unsatisfied : Array(Term)
-      @required.keys.reject do |package|
-        @decisions.has_key? package
-      end.map do |package|
-        @terms[package]
-      end
-    end
-
-    def decide(package : Package, version : Int32) : Nil
-      @attempts += 1 if @backtracking
-      @backtracking = false
-
-      decisions[package] = version
-      add Assignment.new(package, version, decision_level, assignments.size)
-    end
-
-    def backtrack
-      @backtracking = true
-
-      new_assignments = @assignments.select &.decision_level.<= previous_level
-      new_decisions = @decisions.first previous_level
-
-      # whatever this means from Ruby:
-      # new_decisions = Hash[decisions.first(previous_level)]
-
-      reset!
-
-      @decisions = new_decisions
-      new_assignments.each { |a| add a }
-    end
-
-    private def reset! : Nil
-      @assignments = [] of Assignment
-      @assignments_by = Hash(Package, Array(Assignment)).new do |hash, key|
-        hash[key] = [] of Assignment
-      end
-
-      @cumulative = Hash(Package, Version).new.compare_by_identity
-      @terms = {} of Package => Term
-      @relations = Hash(Package, Hash(Term, Relation)).new do |hash, key|
-        hash[key] = {} of Term => Relation
-      end
-
-      @required = {} of Package => Bool
-    end
-
-    private def add(assignment : Assignment) : Nil
-      term = assignment.term
-      package = term.package
-
+    private def assign(assignment : Assignment) : Nil
       @assignments << assignment
-      @assignments_by[package] << assignment
-      @required[package] = true if term.positive?
+      register assignment
+    end
 
-      if @terms.has_key? package
-        old_term = @terms[package]
-        @terms[package] = old_term & term # TODO: interset
-      else
-        @terms[package] = term
+    private def register(assignment : Assignment) : Nil
+      name = assignment.package.name
+      if old_positive = @positive[name]?
+        @positive[name] = old_positive.intersect assignment
+        return
       end
 
-      @relations[package].clear
-      @cumulative[assignment] = @terms[package]
+      ref = assignment.package.to_reference
+      negative_by_ref = @negative[name]?
+      old_negative = negative_by_ref.try &.[ref]?
+      term = old_negative ? assignment.intersect(old_negative) : assignment
+
+      if term.positive?
+        @negative.delete name
+        @positive[name] = term
+      else
+        @negative[name][ref] = term
+      end
     end
   end
 end
