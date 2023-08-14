@@ -23,12 +23,11 @@ module PubGrub
       @decisions.values
     end
 
-    def unsatisfied : Array(Package::Range)
+    def unsatisfied : Array(Term)
       @positive
         .values
         .compact
         .reject { |t| @decisions.has_key? t.package.name }
-        .map &.package
     end
 
     def decision_level : Int32

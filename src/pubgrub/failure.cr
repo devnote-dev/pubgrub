@@ -1,5 +1,5 @@
 module PubGrub
-  class SolveFailure < Exception
+  class SolverFailure < Exception
     getter incompatibility : Incompatibility
     getter explanation : String?
 
