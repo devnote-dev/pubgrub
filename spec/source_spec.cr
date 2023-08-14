@@ -13,8 +13,8 @@ describe PubGrub::StaticPackageSource do
     source.root.should eq({"foo" => ">= 1.0.0"})
 
     source.packages.should eq({
-      "foo" => {"2.0.0" => {"bar" => "1.0.0"} },
-      "bar" => {"1.0.0" => {"foo" => "1.0.0"} },
+      "foo" => {"2.0.0" => {"bar" => "1.0.0"}},
+      "bar" => {"1.0.0" => {"foo" => "1.0.0"}},
     })
   end
 end

@@ -175,10 +175,9 @@ module PubGrub
       latter_line : Int32? = nil
 
       if !this_negative.nil? &&
-        !other_positive.nil? &&
-        this_negative.package.name == other_positive.package.name &&
-        other_negative.inverse.satisfies?(this_positive)
-
+         !other_positive.nil? &&
+         this_negative.package.name == other_positive.package.name &&
+         other_negative.inverse.satisfies?(this_positive)
         prior = self
         prior_negative = this_negative
         prior_line = this_line
@@ -186,10 +185,9 @@ module PubGrub
         latter = other
         latter_line = other_line
       elsif !other_negative.nil? &&
-        !this_positive.nil? &&
-        other_negative.package.name == this_positive.package.name &&
-        other_negative.inverse.satisfies?(this_positive)
-
+            !this_positive.nil? &&
+            other_negative.package.name == this_positive.package.name &&
+            other_negative.inverse.satisfies?(this_positive)
         prior = other
         prior_negative = other_negative
         prior_line = other_line
