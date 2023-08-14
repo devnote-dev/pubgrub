@@ -15,7 +15,6 @@ module PubGrub
 
     def solve : SolverResult
       add [Term.new(Constraint.new(Package.root, Range.new), false)], Cause::Root.new
-      propagate @source.root
 
       time = Time.measure do
         loop do
@@ -39,7 +38,13 @@ module PubGrub
     end
 
     private def add(terms : Array(Term), cause : Cause) : Nil
-      add Incompatibility.new(terms, cause)
+      incomp = Incompatibility.new(terms, cause)
+
+      Log.info { "fact: #{incomp}" }
+
+      incomp.terms.each do |term|
+        @incompatibilities[term.package.name] << incomp
+      end
     end
 
     private def propagate(package : String) : Nil
@@ -148,8 +153,8 @@ module PubGrub
     private def choose_next_package : String?
       return nil unless term = next_term_to_try
 
-      versions = @source.versions_for term.package, term.constraint
-      add([term], Cause::NoVersions.new) if versions.empty?
+      versions = @source.versions_for term.package, term.constraint.constraint
+      add([term], Cause::NoVersions.new(term.constraint)) if versions.empty?
 
       version = versions[0]
       conflict = false
@@ -157,7 +162,7 @@ module PubGrub
       @source.incompatibilities_for(term.package, version).each do |incomp|
         add incomp
 
-        conflict = confict || incomp.terms.all? do |iterm|
+        conflict = conflict || incomp.terms.all? do |iterm|
           iterm.package == term.package || @solution.satisfies?(iterm)
         end
       end
@@ -181,7 +186,7 @@ module PubGrub
         unsatisfied[0]
       else
         unsatisfied.min_by do |term|
-          versions = @source.versions_for term.package, term.constraint
+          versions = @source.versions_for term.package, term.constraint.constraint
           dependencies = if versions.empty?
                            [] of Void
                          else

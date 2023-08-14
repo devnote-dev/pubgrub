@@ -3,13 +3,14 @@ module PubGrub
     getter terms : Array(Term)
     getter cause : Cause
 
-    def self.new(terms : Array(Term), cause : Cause)
+    def initialize(terms : Array(Term), @cause : Cause)
       if terms.size != 1 && cause.is_a?(Cause::Conflict) && terms.any? { |t| t.positive? && t.package.root? }
         terms = terms.select { |t| !t.positive? || t.package.root? }
       end
 
       if terms.size == 1 || (terms.size == 2 && terms[0].package.name != terms[1].package.name)
-        return new terms, cause
+        @terms = terms
+        return
       end
 
       by_name = Hash(String, Hash(Package, Term)).new do |hash, key|
@@ -27,17 +28,12 @@ module PubGrub
         end
       end
 
-      terms = by_name.flat_map do |(_, by_ref)|
+      @terms = by_name.flat_map do |(_, by_ref)|
         positive = by_ref.values.select &.positive?
         return positive unless positive.empty?
 
         by_ref.values
       end
-
-      new terms, cause
-    end
-
-    def initialize(@terms, @cause)
     end
 
     def to_s(details : Hash(String, Package::Detail)? = nil) : String

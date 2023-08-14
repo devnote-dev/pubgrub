@@ -26,37 +26,37 @@ module PubGrub
       @packages[name][version] = dependencies || {} of String => String
     end
 
-    def versions_for(package : Package, constraint : Version::Constraint) : Array(Version)
+    def versions_for(package : Package, constraint : VersionConstraint) : Array(Version)
       @packages[package.name].keys
     end
 
-    def dependencies_for(package : Package, version : Version) : Hash(String, String)
+    def dependencies_for(package : Package, version : VersionConstraint) : Hash(String, String)
       @packages[package.name][version]
     end
 
-    def incompatibilities_for(package : Package, version : Version) : Array(Incompatibility)
+    def incompatibilities_for(package : Package, version : VersionConstraint) : Array(Incompatibility)
       dependencies = dependencies_for package, version
-      package_constraint = Version::Constraint.new package, Version::Range.new(version, version, true, true)
+      package_constraint = Constraint.new package, Range.new(min: version, max: version, include_min: true, include_max: true)
       incomps = [] of Incompatibility
 
-      dependencies.each do |dep|
+      dependencies.each do |_, dep|
         constraint = convert dep
-        unless constraint.is_a? Version::Constraint
-          constraint = Version::Constraint.new package, constraint
+        unless constraint.is_a? VersionConstraint
+          constraint = Constraint.new package, constraint
         end
 
         incomps << Incompatibility.new(
           [Term.new(package_constraint, true), Term.new(constraint, false)],
-          Cause::Dependency
+          Cause::Dependency.new(package_constraint.package, constraint.package)
         )
       end
 
       incomps
     end
 
-    private def convert(dependency : Hash(String, String)) : Version
+    private def convert(dependency : String) : Version
       # TODO
-      raise NotImplementedError.new
+      raise NotImplementedError.new "StaticSource#convert"
     end
   end
 end
