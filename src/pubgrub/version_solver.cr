@@ -14,7 +14,7 @@ module PubGrub
     end
 
     def solve : SolverResult
-      add [Term.new(Version::Constraint.new(Package.root), false)], Cause::Root.new
+      add [Term.new(Constraint.new(Package.root, Range.new), false)], Cause::Root.new
       propagate @source.root
 
       time = Time.measure do
@@ -30,16 +30,16 @@ module PubGrub
       SolverResult.new(@solution.decisions, @solution.attempted)
     end
 
-    private def add(terms : Array(Term), cause : Cause) : Nil
-      add Incompatibility.new terms, cause
-    end
-
     private def add(incomp : Incompatibility) : Nil
       Log.info { "fact: #{incomp}" }
 
       incomp.terms.each do |term|
         @incompatibilities[term.package.name] << incomp
       end
+    end
+
+    private def add(terms : Array(Term), cause : Cause) : Nil
+      add Incompatibility.new(terms, cause)
     end
 
     private def propagate(package : String) : Nil

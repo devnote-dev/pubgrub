@@ -6,18 +6,16 @@ module PubGrub
   end
 
   class Term
+    getter constraint : Constraint
     getter package : Package
     getter? positive : Bool
 
-    def initialize(@package, @positive)
+    def initialize(@constraint, @positive)
+      @package = constraint.package
     end
 
     def inverse : Term
       new @package, !@positive
-    end
-
-    def constraint : Version::Constraint
-      @package.constraint
     end
 
     def satisfies?(other : Term) : Bool
@@ -69,11 +67,11 @@ module PubGrub
           positive = @positive ? self : other
           negative = @positive ? other : self
 
-          non_empty_term positive.constraint.difference(negative.constraint), true
+          non_empty_term positive.constraint.constraint.difference(negative.constraint.constraint), true
         elsif @positive
-          non_empty_term constraint.intersect(other.constraint), false
+          non_empty_term constraint.constraint.intersect(other.constraint.constraint), false
         else
-          non_empty_term constraint.union(other.constraint), false
+          non_empty_term constraint.constraint.union(other.constraint.constraint), false
         end
       elsif @positive != other.positive?
         @positive ? self : other
@@ -92,12 +90,12 @@ module PubGrub
     end
 
     private def compatible?(other : Package) : Bool
-      @package.root? || other.root? || @package.to_reference == other.to_reference
+      @package.root? || other.root?
     end
 
-    private def non_empty_term(constraint : Version::Constraint, positive : Bool) : Term?
+    private def non_empty_term(constraint : VersionConstraint, positive : Bool) : Term?
       return nil if constraint.empty?
-      Term.new @package.to_reference.with_constraint(constraint), positive
+      Term.new Constraint.new(@package, constraint), positive
     end
   end
 end

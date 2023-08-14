@@ -71,7 +71,7 @@ module PubGrub
       @assignments.each do |assignment|
         next unless assignment.package.name == term.package.name
 
-        if !assignment.package.root? && assignment.package.to_reference != term.package.to_reference
+        if !assignment.package.root? && assignment.package != term.package
           next unless assignment.positive?
           return assignment
         end
@@ -90,7 +90,7 @@ module PubGrub
       return positive.relation(term) if positive
 
       return :overlapping unless by_ref = @negative[term.package.name]?
-      return :overlapping unless negative = by_ref[term.package.to_reference]?
+      return :overlapping unless negative = by_ref[term.package.name]?
 
       negative.relation term
     end
@@ -107,7 +107,7 @@ module PubGrub
         return
       end
 
-      ref = assignment.package.to_reference
+      ref = assignment.package.name
       negative_by_ref = @negative[name]?
       old_negative = negative_by_ref.try &.[ref]?
       term = old_negative ? assignment.intersect(old_negative) : assignment

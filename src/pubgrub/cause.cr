@@ -12,9 +12,9 @@ module PubGrub
     end
 
     struct NoVersions < Cause
-      getter constraint : Version::Constraint
+      getter constraint : Constraint
 
-      def initialize(@constraint : Version::Constraint)
+      def initialize(@constraint : Constraint)
       end
     end
 

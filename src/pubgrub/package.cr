@@ -9,6 +9,10 @@ module PubGrub
     def initialize(@name)
     end
 
+    def root? : Bool
+      @name == "root"
+    end
+
     def ==(other : Package) : Bool
       @name == other.name
     end

@@ -12,19 +12,22 @@ module PubGrub
         return new terms, cause
       end
 
-      by_name = Hash(String, Hash(Package, Term)).new
+      by_name = Hash(String, Hash(Package, Term)).new do |hash, key|
+        hash[key] = {} of Package => Term
+      end
+
       terms.each do |term|
-        by_ref = by_name.put term.package.name { }
-        ref = term.package.to_reference
+        by_ref = by_name[term.package.name]
+        ref = term.package
 
         if by_ref.has_key? ref
-          by_ref[ref] = by_ref[ref].intersect(term)
+          by_ref[ref] = by_ref[ref].intersect(term).not_nil!
         else
           by_ref[ref] = term
         end
       end
 
-      terms = by_name.flat_map do |by_ref|
+      terms = by_name.flat_map do |(_, by_ref)|
         positive = by_ref.values.select &.positive?
         return positive unless positive.empty?
 
@@ -35,16 +38,6 @@ module PubGrub
     end
 
     def initialize(@terms, @cause)
-    end
-
-    def external(& : Incompatibility ->)
-      if @cause.is_a? Cause::Conflict
-        cause = @cause.as(Cause::Conflict)
-        yield cause.conflict.external
-        yield cause.other.external
-      else
-        yield self
-      end
     end
 
     def to_s(details : Hash(String, Package::Detail)? = nil) : String
@@ -308,7 +301,7 @@ module PubGrub
     end
 
     private def terse_ref(term : Term, details : Hash(String, Package::Detail)?) : String
-      term.package.to_reference.to_s details.try &.[term.package.name]?
+      term.package.to_s details.try &.[term.package.name]?
     end
   end
 end
