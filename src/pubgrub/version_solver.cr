@@ -14,7 +14,7 @@ module PubGrub
     end
 
     def solve : SolverResult
-      add [Term.new(Version::Constraint.new(@source.root), false)], Cause::Root.new
+      add [Term.new(Version::Constraint.new(Package.root), false)], Cause::Root.new
       propagate @source.root
 
       time = Time.measure do
@@ -191,6 +191,14 @@ module PubGrub
           {versions.size, dependencies.size}
         end
       end
+    end
+  end
+
+  class SolverResult
+    getter decisions : Array(Package)
+    getter attempts : Int32
+
+    def initialize(@decisions, @attempts)
     end
   end
 end

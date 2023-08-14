@@ -2,6 +2,10 @@ module PubGrub
   class Package
     getter name : String
 
+    def self.root
+      new "root"
+    end
+
     def initialize(@name)
     end
 
