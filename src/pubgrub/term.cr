@@ -15,7 +15,7 @@ module PubGrub
     end
 
     def inverse : Term
-      new @package, !@positive
+      Term.new @constraint, !@positive
     end
 
     def satisfies?(other : Term) : Bool
@@ -57,7 +57,7 @@ module PubGrub
       end
     end
 
-    def intersect(other : Term) : Term?
+    def intersect(other : Term) : Term
       unless @package.name == other.package.name
         raise ArgumentError.new "Other package should refer to package #{@package.name}"
       end
@@ -76,8 +76,9 @@ module PubGrub
       elsif @positive != other.positive?
         @positive ? self : other
       else
-        nil
+        raise "TODO: make not nillable"
       end
+      raise "TODO: make not nillable"
     end
 
     def difference(other : Term) : Term?

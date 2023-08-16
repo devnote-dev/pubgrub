@@ -8,7 +8,7 @@ module PubGrub
       new constraint, true, decision_level, index, nil
     end
 
-    def initialize(constraint : Constraint, positive : Bool, @decision_level : Int32, @index : Int32, @cause : Cause?)
+    def initialize(constraint : Constraint, positive : Bool, @decision_level : Int32, @index : Int32, @cause : Incompatibility?)
       super constraint, positive
     end
 

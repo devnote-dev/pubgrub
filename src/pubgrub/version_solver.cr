@@ -23,14 +23,14 @@ module PubGrub
         end
       end
 
-      Log.info { "Version solving took #{time.total_seconds} seconds." }
+      Log.info { "Version solving took #{time.total_seconds.to_i} seconds." }
       Log.info { "Tried #{@solution.attempted} solutions." }
 
       SolverResult.new(@solution.decisions, @solution.attempted)
     end
 
     private def add(incomp : Incompatibility) : Nil
-      Log.info { "fact: #{incomp}" }
+      Log.info { "fact: #{incomp.to_s}" }
 
       incomp.terms.each do |term|
         @incompatibilities[term.package.name] << incomp
@@ -40,14 +40,14 @@ module PubGrub
     private def add(terms : Array(Term), cause : Cause) : Nil
       incomp = Incompatibility.new(terms, cause)
 
-      Log.info { "fact: #{incomp}" }
+      Log.info { "fact: #{incomp.to_s}" }
 
       incomp.terms.each do |term|
         @incompatibilities[term.package.name] << incomp
       end
     end
 
-    private def propagate(package : String) : Nil
+    private def propagate(package : Package) : Nil
       changed = [package]
 
       until changed.empty?
@@ -55,20 +55,20 @@ module PubGrub
 
         @incompatibilities[package.name].reverse_each do |incomp|
           case result = propagate incomp
-          in String
+          in Package
             changed << result
           in Symbol
             next if result == :none
 
             root_cause = resolve_conflict incomp
             changed.clear
-            changed << propagate(root_cause).as(String)
+            changed << propagate(root_cause).as(Package)
           end
         end
       end
     end
 
-    private def propagate(incomp : Incompatibility) : String | Symbol
+    private def propagate(incomp : Incompatibility) : Package | Symbol
       unsatisfied : Term? = nil
 
       incomp.terms.size.times do |i|
@@ -85,9 +85,9 @@ module PubGrub
       return :conflict if unsatisfied.nil?
 
       Log.info { "derived: #{unsatisfied.inverse}" }
-      @solution.derive unsatisfied.package, !unsatisfied.positive?, incomp
+      @solution.derive unsatisfied.constraint, !unsatisfied.positive?, incomp
 
-      unsatisfied.package.name
+      unsatisfied.package
     end
 
     private def resolve_conflict(incomp : Incompatibility) : Incompatibility
@@ -114,43 +114,47 @@ module PubGrub
           end
 
           if most_recent_term == term
-            difference = most_recent_satisfier.difference most_recent_term
+            # TODO: make sure not nil
+            difference = most_recent_satisfier.difference most_recent_term.as(Term)
             if difference
               previous_satisfier_level = Math.max(previous_satisfier_level, @solution.satisfier(difference.inverse).decision_level)
             end
           end
         end
 
-        if previous_satisfier_level < most_recent_satisfier.try(&.decision_level) || most_recent_satisfier.cause.nil?
+        thing = most_recent_satisfier.try(&.decision_level)
+        # TODO: don't typecast
+        if previous_satisfier_level < (thing.nil? ? 0 : thing) || most_recent_satisfier.as(Assignment).cause.nil?
           @solution.backtrack previous_satisfier_level
-          add_incompatibility incomp if new_incomp
+          add incomp if new_incomp
           return incomp
         end
 
         new_terms = incomp.terms.reject { |t| t == most_recent_term }
         most_recent_satisfier.try do |satisfier|
-          satisfier.cause.try do |terms|
-            new_terms += terms.reject { |t| t.package == satisfier.package }
+          satisfier.cause.try do |cause|
+            new_terms += cause.terms.reject { |t| t.package == satisfier.package }
           end
         end
 
         new_terms << difference.inverse if difference
         incomp = Incompatibility.new(
           new_terms,
-          Incompatibility::Cause::Conflict.new(incomp, most_recent_satisfier.cause)
+          # TODO: don't typecast
+          Cause::Conflict.new(incomp, most_recent_satisfier.as(Assignment).cause.as(Incompatibility))
         )
         new_incomp = true
 
         partially = difference ? " partially" : ""
         Log.info { "! #{most_recent_term} is#{partially} satisfied by #{most_recent_satisfier}" }
-        Log.info { "! which is caused by #{most_recent_satisfier.cause}" }
+        Log.info { "! which is caused by #{most_recent_satisfier.as(Assignment).cause}" }
         Log.info { "! thus: #{incomp}" }
       end
 
       raise SolverFailure.new incomp
     end
 
-    private def choose_next_package : String?
+    private def choose_next_package : Package?
       return nil unless term = next_term_to_try
 
       versions = @source.versions_for term.package, term.constraint.constraint
@@ -168,7 +172,7 @@ module PubGrub
       end
 
       unless conflict
-        @solution.decide term.package
+        @solution.decide term.constraint
         Log.info { "selecting #{term} (#{version})" }
       end
 
