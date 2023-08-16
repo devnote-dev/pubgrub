@@ -54,6 +54,10 @@ module PubGrub
       incomps
     end
 
+    def root(dependencies : Hash(String, String)) : Nil
+      @packages["root"][Version.parse("0.0.0")] = dependencies
+    end
+
     private def convert(dependency : String) : Version
       # TODO
       raise NotImplementedError.new "StaticSource#convert"

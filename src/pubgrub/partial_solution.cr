@@ -33,23 +33,23 @@ module PubGrub
       @decisions.size
     end
 
-    def decide(package : Package) : Nil
+    def decide(constraint : Constraint) : Nil
       @attempted += 1 if @backtracking
       @backtracking = false
-      @decisions[package.name] = package
+      @decisions[constraint.package.name] = constraint.package
 
-      assign Assignment.decision(package, @decisions.size, @assignments.size)
+      assign Assignment.decision(constraint, @decisions.size, @assignments.size)
     end
 
-    def derive(package : Package, positive : Bool, cause : Incompatibility) : Nil
-      assign Assignment.derivation(package, positive, @decisions.size, @assignments.size, cause)
+    def derive(constraint : Constraint, positive : Bool, cause : Incompatibility) : Nil
+      assign Assignment.new(constraint, positive, @decisions.size, @assignments.size, cause)
     end
 
     def backtrack(decision_level : Int32) : Nil
       @backtracking = true
       packages = [] of String
 
-      while @assignments.last.decision_level > @decision_level
+      while @assignments.last.decision_level > decision_level
         removed = @assignments.pop
         packages << removed.package.name
         @decisions.delete removed.package.name if removed.decision?
@@ -61,7 +61,7 @@ module PubGrub
       end
 
       @assignments.each do |assignment|
-        register asignment if packages.includes? assignment.package.name
+        register assignment if packages.includes? assignment.package.name
       end
     end
 
@@ -79,6 +79,7 @@ module PubGrub
         assigned = assigned.nil? ? assignment : assigned.intersect(assignment)
         return assignment if assigned.try &.satisfies? term
       end
+      raise "TODO: don't return nil"
     end
 
     def satisfies?(term : Term) : Bool
@@ -107,7 +108,7 @@ module PubGrub
         return
       end
 
-      ref = assignment.package.name
+      ref = assignment.package
       negative_by_ref = @negative[name]?
       old_negative = negative_by_ref.try &.[ref]?
       term = old_negative ? assignment.intersect(old_negative) : assignment

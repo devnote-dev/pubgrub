@@ -17,5 +17,9 @@ module PubGrub
     def allows_all?(constraint : Constraint) : Bool
       @constraint.allows_all? constraint.constraint
     end
+
+    def any? : Bool
+      true
+    end
   end
 end

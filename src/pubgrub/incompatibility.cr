@@ -46,9 +46,9 @@ module PubGrub
 
         return "#{terse_ref(@terms[0], details)} doesn't exist (#{ex.message})"
       elsif @cause.is_a? Cause::UnknownSource
-        return %(#{@terms[0].package.name} comes from an unknown source "#{@terms[0].package.source}")
+        return %(#{@terms[0].package.name} comes from an unknown source)
       elsif @cause.is_a? Cause::Root
-        return "#{@terms[0].package.name} is #{@terms[0].constraint}"
+        return "#{@terms[0].package.name} is #{@terms[0].constraint.constraint}"
       elsif failure?
         return "version solving failed"
       end
@@ -77,14 +77,15 @@ module PubGrub
       end
 
       positive, negative = @terms.partition &.positive?
-      positive.map! { |t| terse(t, details) }
-      negative.map! { |t| terse(t, details) }
+      positive = positive.map { |t| terse(t, details) }
+      negative = negative.map { |t| terse(t, details) }
 
       if !positive.empty? && !negative.empty?
         if positive.size == 1
           term = @terms.find &.positive?
 
-          "#{terse(term, details, true)} requires #{negative.join " or "}"
+          # TODO: don't typecast
+          "#{terse(term.as(Term), details, true)} requires #{negative.join " or "}"
         else
           "if #{positive.join " and "} then #{negative.join " or "}"
         end
@@ -93,6 +94,10 @@ module PubGrub
       else
         "one of #{negative.join " or "} must be true"
       end
+    end
+
+    def failure? : Bool
+      @terms.empty? || (@terms.size == 1 && @terms[0].package.root? && @terms[0].positive?)
     end
 
     def and_to_s(other : Incompatibility, details : Hash(String, Package::Detail)? = nil, this_line : Int32? = nil, other_line : Int32? = nil) : String
@@ -289,15 +294,17 @@ module PubGrub
     end
 
     private def terse(term : Term, details : Hash(String, Package::Detail)?, every : Bool = false) : String
-      if every && term.constraint.any?
-        "every version of #{terse_ref(term, details)}"
+      if every && !term.constraint.nil?
+        return "every version of #{terse_ref(term, details)}"
       else
-        term.package.to_s details.try &.[term.package.name]?
+        # return term.package.to_s details.try &.[term.package.name]?
+        return term.package.name
       end
     end
 
     private def terse_ref(term : Term, details : Hash(String, Package::Detail)?) : String
-      term.package.to_s details.try &.[term.package.name]?
+      # term.package.name details.try &.[term.package.name]?
+      return term.package.name
     end
   end
 end
