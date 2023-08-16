@@ -4,12 +4,12 @@ module PubGrub
     getter index : Int32
     getter cause : Incompatibility?
 
-    def self.decision(package : Package, decision_level : Int32, index : Int32)
-      new package, true, decision_level, index
+    def self.decision(constraint : Constraint, decision_level : Int32, index : Int32)
+      new constraint, true, decision_level, index, nil
     end
 
-    def initialize(package : Package, positive : Bool, @decision_level : Int32, @index : Int32, @cause : Cause?)
-      super package, positive
+    def initialize(constraint : Constraint, positive : Bool, @decision_level : Int32, @index : Int32, @cause : Cause?)
+      super constraint, positive
     end
 
     def decision? : Bool

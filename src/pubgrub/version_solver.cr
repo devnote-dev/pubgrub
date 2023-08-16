@@ -168,7 +168,7 @@ module PubGrub
       end
 
       unless conflict
-        @solution.decide term.package, version
+        @solution.decide term.package
         Log.info { "selecting #{term} (#{version})" }
       end
 

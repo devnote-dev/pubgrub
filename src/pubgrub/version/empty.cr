@@ -41,7 +41,7 @@ module PubGrub
     end
 
     def allows_all?(other : VersionConstraint) : Bool
-      other.emtpy?
+      other.empty?
     end
 
     def intersect(other : VersionConstraint) : VersionConstraint

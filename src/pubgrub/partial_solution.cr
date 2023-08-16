@@ -38,11 +38,11 @@ module PubGrub
       @backtracking = false
       @decisions[package.name] = package
 
-      assign Assignment.decision(package, @decision_level, @assignments.size)
+      assign Assignment.decision(package, @decisions.size, @assignments.size)
     end
 
     def derive(package : Package, positive : Bool, cause : Incompatibility) : Nil
-      assign Assignment.derivation(package, positive, @decision_level, @assignments.size, cause)
+      assign Assignment.derivation(package, positive, @decisions.size, @assignments.size, cause)
     end
 
     def backtrack(decision_level : Int32) : Nil
@@ -89,8 +89,8 @@ module PubGrub
       positive = @positive[term.package.name]?
       return positive.relation(term) if positive
 
-      return :overlapping unless by_ref = @negative[term.package.name]?
-      return :overlapping unless negative = by_ref[term.package.name]?
+      return Relation::Overlapping unless by_ref = @negative[term.package.name]?
+      return Relation::Overlapping unless negative = by_ref[term.package.name]?
 
       negative.relation term
     end

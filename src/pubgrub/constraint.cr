@@ -9,5 +9,13 @@ module PubGrub
     def difference(other : VersionConstraint) : Constraint
       Constraint.new @package, @constraint.difference(other)
     end
+
+    def allows_any?(constraint : Constraint) : Bool
+      @constraint.allows_any? constraint.constraint
+    end
+
+    def allows_all?(constraint : Constraint) : Bool
+      @constraint.allows_all? constraint.constraint
+    end
   end
 end

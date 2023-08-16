@@ -11,3 +11,7 @@ development_dependencies:
     version: ~> 1.4.0
 
 license: MIT
+
+targets:
+  pubgrub:
+    main: test/test.cr

@@ -30,29 +30,29 @@ module PubGrub
       other_constraint = other.constraint
       if other.positive?
         if @positive
-          return :subset if !compatible?(other.package)
-          return :subset if !other_constraint.allows_any?(constraint)
-          return :disjoint if other_constraint.allows_all?(constraint)
+          return Relation::Subset if !compatible?(other.package)
+          return Relation::Subset if !other_constraint.allows_any?(constraint)
+          return Relation::Disjoint if other_constraint.allows_all?(constraint)
 
-          :overlapping
+          Relation::Overlapping
         else
-          return :overlapping if !compatible?(other.package)
-          return :disjoint if constraint.allows_all?(other_constraint)
+          return Relation::Overlapping if !compatible?(other.package)
+          return Relation::Disjoint if constraint.allows_all?(other_constraint)
 
-          :overlapping
+          Relation::Overlapping
         end
       else
         if @positive
-          return :subset if !compatible?(other.package)
-          return :subset if !other_constraint.allows_any?(constraint)
-          return :disjoint if other_constraint.allows_all?(constraint)
+          return Relation::Subset if !compatible?(other.package)
+          return Relation::Subset if !other_constraint.allows_any?(constraint)
+          return Relation::Disjoint if other_constraint.allows_all?(constraint)
 
-          :overlapping
+          Relation::Overlapping
         else
-          return :overlapping if !compatible?(other.package)
-          return :subset if constraint.allows_all?(other_constraint)
+          return Relation::Overlapping if !compatible?(other.package)
+          return Relation::Subset if constraint.allows_all?(other_constraint)
 
-          :overlapping
+          Relation::Overlapping
         end
       end
     end

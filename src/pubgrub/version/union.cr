@@ -89,14 +89,16 @@ module PubGrub
       their_current = their_ranges.next
 
       while our_current != Iterator::Stop::INSTANCE && their_current != Iterator::Stop::INSTANCE
-        return true if our_current.allows_any? thier_current
+        return true if our_current.as(Range).allows_any? their_current.as(Range)
 
-        if their_current.allows_higher? our_current
+        if their_current.as(Range).allows_higher? our_current.as(Range)
           our_current = our_ranges.next
         else
           their_current = their_ranges.next
         end
       end
+
+      raise "unreachable"
     end
 
     def allows_all?(other : VersionConstraint) : Bool
@@ -107,7 +109,7 @@ module PubGrub
       their_current = their_ranges.next
 
       while our_current != Iterator::Stop::INSTANCE && their_current != Iterator::Stop::INSTANCE
-        if our_current.allows_all? their_current
+        if our_current.as(Range).allows_all? their_current.as(Range)
           their_current = their_ranges.next
         else
           our_current = our_ranges.next
